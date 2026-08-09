@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import type { Message } from "../types/chat";
-
+import type { Message as MessageType } from "../types/chat";
+import Message from "./Message";
 interface Props {
-  messages: Message[];
+  messages: MessageType[];
 }
 
 function ChatWindow({ messages }: Props) {
@@ -19,25 +19,11 @@ function ChatWindow({ messages }: Props) {
   return (
     <div className="flex-1 overflow-y-auto p-6 space-y-4">
       {messages.map((message) => (
-        <div
-          key={message.id}
-          className={`flex ${
-            message.role === "user"
-              ? "justify-end"
-              : "justify-start"
-          }`}
-        >
-          <div
-            className={`max-w-[70%] rounded-xl px-4 py-3 ${
-              message.role === "user"
-                ? "bg-blue-600 text-white"
-                : "bg-slate-700 text-white"
-            }`}
-          >
-            {message.content}
-          </div>
-        </div>
-      ))}
+      <Message
+        key={message.id}
+        message={message}
+    />
+  ))}
       <div ref={bottomRef} />
     </div>
   );
