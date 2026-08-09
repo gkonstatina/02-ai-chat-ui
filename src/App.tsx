@@ -1,4 +1,3 @@
-import api from "./services/api";
 import { useState } from "react";
 
 import Header from "./components/Header";
@@ -19,38 +18,72 @@ function App() {
   const [loading, setLoading] = useState(false);
 
   const sendMessage = async (text: string) => {
-
   const userMessage: Message = {
     id: Date.now(),
     role: "user",
     content: text,
   };
 
-  setMessages(prev => [...prev, userMessage]);
-
-  setLoading(true);
+  setMessages((prev) => [...prev, userMessage]);
 
   try {
+      setLoading(true);
 
-    const response = await api.post("/chat", {
-      message: text,
+      const response = await fetch("http://127.0.0.1:8000/api/chat/stream", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: text,
+      }),
     });
 
-    // Temporary delay so we can see the loading indicator
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    if (!response.ok) {
+      throw new Error("Failed to get response");
+    }
+
+    if (!response.body) {
+      throw new Error("Response body is empty");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    let aiText = "";
 
     const aiMessage: Message = {
       id: Date.now() + 1,
       role: "assistant",
-      content: response.data.response,
+      content: "",
     };
 
-    setMessages(prev => [...prev, aiMessage]);
-    setLoading(false);
+    setMessages((prev) => [...prev, aiMessage]);
 
+    while (true) {
+      const { value, done } = await reader.read();
+
+      if (done) break;
+
+      const chunk = decoder.decode(value, {
+        stream: true,
+      });     
+
+      aiText += chunk;
+
+      setMessages((prev) =>
+        prev.map((message) =>
+          message.id === aiMessage.id
+            ? {
+              ...message,
+              content: aiText,
+              }
+            : message
+        )
+      );
+    }
   } catch {
-
-    setMessages(prev => [
+    setMessages((prev) => [
       ...prev,
       {
         id: Date.now() + 2,
@@ -58,11 +91,10 @@ function App() {
         content: "Unable to connect to backend.",
       },
     ]);
-    setLoading(false);
-
-  }
-
-};
+  } finally {
+  setLoading(false);
+}
+}
 
   return (
     <div className="bg-slate-900 min-h-screen flex flex-col">
@@ -79,6 +111,7 @@ function App() {
           </div>
         )}
       </>
+
 
 
 
