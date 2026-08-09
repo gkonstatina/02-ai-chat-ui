@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Header from "./components/Header";
 import ChatInput from "./components/ChatInput";
@@ -7,13 +7,44 @@ import ChatWindow from "./components/ChatWindow";
 import type { Message } from "./types/chat";
 
 function App() {
-  const [messages, setMessages] = useState<Message[]>([
+  const [messages, setMessages] = useState<Message[]>(() => {
+  const savedMessages = localStorage.getItem("chat-messages");
+
+  if (savedMessages) {
+    return JSON.parse(savedMessages);
+  }
+
+  return [
     {
       id: 1,
       role: "assistant",
       content: "Hello! 👋 Ask me anything.",
     },
+  ];
+});
+
+  useEffect(() => {
+    localStorage.setItem(
+      "chat-messages",
+      JSON.stringify(messages)
+    );
+  }, [messages]);
+
+
+  const clearChat = () => {
+  localStorage.removeItem("chat-messages");
+
+  setMessages([
+    {
+      id: Date.now(),
+      role: "assistant",
+      content: "Hello! 👋 Ask me anything.",
+    },
   ]);
+};
+
+  
+
 
   const [loading, setLoading] = useState(false);
 
@@ -98,7 +129,7 @@ function App() {
 
   return (
     <div className="bg-slate-900 min-h-screen flex flex-col">
-      <Header />
+     <Header onClear={clearChat} />
 
       <>
         <ChatWindow messages={messages} />
