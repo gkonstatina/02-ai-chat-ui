@@ -5,6 +5,7 @@ interface Props {
   activeChatId: string;
   onSelectChat: (chatId: string) => void;
   onDeleteChat: (chatId: string) => void;
+  onRenameChat: (chatId: string, title: string) => void;
 }
 
 function ChatSidebar({
@@ -12,6 +13,7 @@ function ChatSidebar({
   activeChatId,
   onSelectChat,
   onDeleteChat,
+  onRenameChat,
 }: Props) {
   return (
     <aside className="w-64 bg-slate-800 p-4">
@@ -34,6 +36,19 @@ function ChatSidebar({
               }`}
             >
               {chat.title}
+            </button>
+            <button
+              onClick={() => {
+                const newTitle = window.prompt("Rename chat:", chat.title);
+
+                if (newTitle && newTitle.trim()) {
+                  onRenameChat(chat.id, newTitle.trim());
+                }
+              }}
+              className="text-slate-400 hover:text-white px-2"
+              title="Rename chat"
+            >
+              ✏️
             </button>
 
             <button

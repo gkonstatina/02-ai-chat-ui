@@ -146,7 +146,17 @@ function App() {
 
       return remainingChats;
     });
-  };
+    };
+
+    const renameChat = (chatId: string, title: string) => {
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.id === chatId
+            ? { ...chat, title }
+            : chat
+        )
+      );
+    };
 
 
 
@@ -279,6 +289,7 @@ function App() {
           activeChatId={activeChatId}
           onSelectChat={selectChat}
           onDeleteChat={deleteChat}
+          onRenameChat={renameChat}
         />
 
       <div className="flex-1 flex flex-col">
